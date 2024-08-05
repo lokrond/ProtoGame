@@ -72,3 +72,36 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+/VoidStar/Intermediate
+/VoidStar/Content
+VoidStar/Saved/Autosaves/PackageRestoreData.json
+VoidStar/Saved/AutoScreenshot.png
+VoidStar/Saved/Config/CrashReportClient/UECC-Windows-59A1621E44E6135886B10797CE6534FA/CrashReportClient.ini
+VoidStar/Saved/Config/CrashReportClient/UECC-Windows-6A93940E40DCD1994606FE84AB4DF3F6/CrashReportClient.ini
+VoidStar/Saved/Config/WindowsEditor/Editor.ini
+VoidStar/Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini
+VoidStar/Saved/Config/WindowsEditor/Game.ini
+VoidStar/Saved/Config/WindowsEditor/GameUserSettings.ini
+VoidStar/Saved/Config/WorldState/551869282.json
+VoidStar/Saved/Logs/VoidStar-backup-2024.08.05-06.18.04.log
+VoidStar/Saved/Logs/VoidStar.log
+VoidStar/Saved/ShaderDebugInfo/PCD3D_SM6/WorldGridMaterial_ea5d70b5306083b5/Default/DDCKey-Editor.txt
+VoidStar/Saved/SourceControl/UncontrolledChangelists.json
+VoidStar/Saved/Telemetry/Telemetry.json
+VoidStar/Saved/UnrealBuildTool/BuildConfiguration.xml
+VoidStar/Binaries/Win64/VoidStarEditor.target
+VoidStar/Binaries/Win64/UnrealEditor.modules
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.pdb
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_3.pdb
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_3.exp
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_2.pdb
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_2.exp
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_1.pdb
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_1.exp
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_0.pdb
+VoidStar/Binaries/Win64/UnrealEditor-VoidStar.patch_0.exp
+VoidStar/Config/DefaultInput.ini
+VoidStar/Config/DefaultGame.ini
+VoidStar/Config/DefaultEngine.ini
+VoidStar/Config/DefaultEditor.ini
+VoidStar/Source/VoidStar.Target.cs
