@@ -140,6 +140,7 @@ void AVSCharacter::Move(const FInputActionInstance& Instance)
 	}
 	if (AxisValue.Y != 0)
 	{
+		// GetRightVector() is an existing function doing the same as this line.
 		const FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
 		AddMovementInput(RightVector, AxisValue.Y);
 	}
@@ -183,12 +184,11 @@ void AVSCharacter::ShootPrimaryAttack(const FInputActionInstance& Instance)
 	PlayAnimMontage(AttackAnim);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackAnim, this, &AVSCharacter::PrimaryAttack_TimeElapsed, DelayTimer);
 
-	//Should get call if player died when death mechanics implemented.
-	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
 }
 
 void AVSCharacter::PrimaryAttack_TimeElapsed()
 {
+	UE_LOG(LogTemp, Display, TEXT("PrimaryAttack called"))
 	SpawnProjectile(MagicProjectileClass);
 }
 
@@ -231,5 +231,9 @@ void AVSCharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponen
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+	}
+	if (NewHealth == 0)
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_AttackAnim);
 	}
 }

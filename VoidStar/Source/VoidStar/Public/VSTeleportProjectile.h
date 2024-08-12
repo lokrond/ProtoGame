@@ -36,8 +36,6 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual void PostInitializeComponents() override;
-
 	virtual void Explode_Implementation() override;
 
 	void TeleportInstigator();

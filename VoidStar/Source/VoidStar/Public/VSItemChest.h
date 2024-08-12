@@ -10,24 +10,17 @@ UCLASS()
 class VOIDSTAR_API AVSItemChest : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
+
+	AVSItemChest();
+
+protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> LidMesh;
-
-
-protected:
-
-	virtual void BeginPlay() override;
-
-public:
-
-	AVSItemChest();
-
-	virtual void Tick(float DeltaTime) override;
 
 };

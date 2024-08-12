@@ -4,7 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 #include "SVAICharacter.generated.h"
+
+class USVAttributeComponent;
+class UPawnSensingComponent;
+class URadialForceComponent;
+class UParticleSystemComponent;
 
 UCLASS()
 class VOIDSTAR_API AAICharacter : public ACharacter
@@ -12,18 +18,44 @@ class VOIDSTAR_API AAICharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+
 	AAICharacter();
 
+	bool GetIsLowLife() { return bIsLowLife; }
+	void SetIsLowLife(bool bHasLowLife) { bIsLowLife = bHasLowLife; }
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void PostInitializeComponents() override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<UPawnSensingComponent> PawnSensingComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<URadialForceComponent> RadialForceComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<USVAttributeComponent> AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	TObjectPtr<UParticleSystemComponent> ParticleEffectComp;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	TObjectPtr<UParticleSystem> Explosion_VFX;
+
+	UFUNCTION()
+	void OnPawnSeen(APawn* Pawn);
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	void SetTargetActor(AActor* NewTarget);
+
+	bool bIsLowLife = false;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float ExplosionRadius = 500.f;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float ExplosionDamage = 25.f;
 };

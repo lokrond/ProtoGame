@@ -3,32 +3,92 @@
 
 #include "AI/SVAICharacter.h"
 
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "SVAttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Perception/PawnSensingComponent.h"
+
 // Sets default values
 AAICharacter::AAICharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+ 
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
 
+	AttributeComp = CreateDefaultSubobject<USVAttributeComponent>("AttributeComp");
+
+	ParticleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>("ParticleEffectComp");
+	ParticleEffectComp->SetupAttachment(GetMesh(), "neck_01");
+
+	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>("RadialForceComp");
+	RadialForceComp->SetupAttachment(RootComponent);
+	RadialForceComp->Radius = ExplosionRadius;
+	RadialForceComp->bImpulseVelChange = true;
+
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-// Called when the game starts or when spawned
-void AAICharacter::BeginPlay()
+void AAICharacter::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
+
+	PawnSensingComp->OnSeePawn.AddDynamic(this, &AAICharacter::OnPawnSeen);
+	AttributeComp->OnHealthChanged.AddDynamic(this, &AAICharacter::OnHealthChanged);
+}
+
+void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta)
+{
 	
+	if (NewHealth <= 25.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Particle effect activate"))
+		ParticleEffectComp->Activate();
+		SetIsLowLife(true);
+	}
+
+	if (Delta < 0.f)
+	{
+		if (InstigatorActor != this)
+		{
+			SetTargetActor(InstigatorActor);
+		}
+
+		if (NewHealth <= 0.f)
+		{
+			AAIController* AIC = Cast<AAIController>(GetController());
+			if (AIC)
+			{
+				AIC->GetBrainComponent()->StopLogic("Killed");
+			}
+
+			GetMesh()->SetAllBodiesSimulatePhysics(true);
+			GetMesh()->SetCollisionProfileName("Ragdoll");
+			SetLifeSpan(10.f);
+		}
+	}
+
+	if (NewHealth > 25.f && ParticleEffectComp->IsActive())
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion_VFX, GetActorLocation(), GetActorRotation());
+		RadialForceComp->FireImpulse();
+		ParticleEffectComp->Deactivate();
+		SetIsLowLife(false);
+	}
 }
 
-// Called every frame
-void AAICharacter::Tick(float DeltaTime)
+void AAICharacter::SetTargetActor(AActor* NewTarget)
 {
-	Super::Tick(DeltaTime);
-
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+	}
 }
-
-// Called to bind functionality to input
-void AAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	SetTargetActor(Pawn);
 
+	DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.f, true);
 }
-

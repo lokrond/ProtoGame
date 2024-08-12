@@ -19,12 +19,3 @@ void AVSTargetDummy::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-/*void AMjTargetDummy::OnHealthChanged(AActor* InstigatorActor, UMjAttributeComponent* OwningComp, float NewHealth, float Delta)
-{
-	if (Delta < 0.f)
-	{
-		SkeletalComp->
-	}
-}
-*/

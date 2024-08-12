@@ -3,6 +3,7 @@
 
 #include "AI/SVAIController.h"
 
+#include "AI/VSBTService_CheckAttack.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -10,13 +11,8 @@ void ASVAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	RunBehaviorTree(BehaviourTree);
-
-	APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (MyPawn)
+	if(ensureMsgf(BehaviorTree, TEXT("BehaviorTree is nullptr! Assign BehaviorTree in AI Controller")))
 	{
-		GetBlackboardComponent()->SetValueAsVector("MoveToLocation", MyPawn->GetActorLocation());
-
-		GetBlackboardComponent()->SetValueAsObject("TargetActor", MyPawn);
+		RunBehaviorTree(BehaviorTree);
 	}
 }

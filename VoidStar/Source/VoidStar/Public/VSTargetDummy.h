@@ -26,9 +26,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USVAttributeComponent> AttributeComp;
 
-	//UFUNCTION()
-	//void OnHealthChanged(AActor* InstigatorActor, UMjAttributeComponent* OwningComp, float NewHealth, float Delta);
-
 	virtual void BeginPlay() override;
 
 };

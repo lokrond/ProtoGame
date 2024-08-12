@@ -11,13 +11,6 @@ AVSTeleportProjectile::AVSTeleportProjectile()
 	MovementComp->InitialSpeed = 3000.f;
 }
 
-void AVSTeleportProjectile::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	//SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AMjTeleportProjectile::Explode_Implementation);
-}
-
 void AVSTeleportProjectile::BeginPlay()
 {
 	Super::BeginPlay();
@@ -36,9 +29,6 @@ void AVSTeleportProjectile::Explode_Implementation()
 
 	FTimerHandle TimerHandle_Teleport;
 	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &AVSTeleportProjectile::TeleportInstigator, DelayTimerTP);
-
-	// Skip base implementation to prevent Destroy() being called on this implementation (don't call Super)
-	// Super::Explode_Implementation 
 }
 
 void AVSTeleportProjectile::TeleportInstigator()

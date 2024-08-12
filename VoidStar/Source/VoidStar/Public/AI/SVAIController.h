@@ -8,6 +8,7 @@
 
 class UBehaviorTree;
 
+
 /**
  * 
  */
@@ -17,8 +18,9 @@ class VOIDSTAR_API ASVAIController : public AAIController
 	GENERATED_BODY()
 
 protected:
+
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TObjectPtr<UBehaviorTree>BehaviourTree;
+	TObjectPtr<UBehaviorTree> BehaviorTree;
 };

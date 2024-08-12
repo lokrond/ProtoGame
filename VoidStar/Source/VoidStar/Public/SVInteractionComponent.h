@@ -17,8 +17,6 @@ public:
 
 	void PrimaryInteract();
 
-	void FaceOnAttack();
-
 	// Sets default values for this component's properties
 	USVInteractionComponent();
 

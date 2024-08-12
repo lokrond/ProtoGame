@@ -2,43 +2,34 @@
 
 
 #include "VSBaseBuffs.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 AVSBaseBuffs::AVSBaseBuffs()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetCollisionProfileName("Buffs");
+	RootComponent = SphereComp;
 
-	PotionMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("PotionMeshComp");
-	RootComponent = PotionMeshComp;
-}
 
-// Called when the game starts or when spawned
-void AVSBaseBuffs::BeginPlay()
-{
-	Super::BeginPlay();
 	
 }
 
-// Called every frame
-void AVSBaseBuffs::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 void AVSBaseBuffs::OnBuffInteraction()
 {
-	if (bIsBuffActive)
-	{
-		SetActorHiddenInGame(true);
-		bIsBuffActive = false;
+		SetBuffState(false);
 		GetWorldTimerManager().SetTimer(InactiveBuffDelay_Handle, this, &AVSBaseBuffs::ReactiveBuff, InactiveDelay);
-	}
 }
 
 void AVSBaseBuffs::ReactiveBuff()
 {
-	SetActorHiddenInGame(false);
-	bIsBuffActive = true;
+	SetBuffState(true);
+}
+
+void AVSBaseBuffs::SetBuffState(bool bBuffState)
+{
+
+	SetActorEnableCollision(bBuffState);
+	RootComponent->SetVisibility(bBuffState, true);
 }

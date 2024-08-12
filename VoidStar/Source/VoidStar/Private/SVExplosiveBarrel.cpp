@@ -46,8 +46,11 @@ void ASVExplosiveBarrel::PostInitializeComponents()
 void ASVExplosiveBarrel::ExplosionOnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	RadialForceComp->FireImpulse();
+
 	DrawDebugSphere(GetWorld(), GetActorLocation(), RadialForceComp->Radius, 16, FColor::Red, false, 2.f);
+
 	UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s, at game time: %f"), *GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
+
 	FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
 	DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
 }

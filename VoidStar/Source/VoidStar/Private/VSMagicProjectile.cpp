@@ -23,13 +23,6 @@ void AVSMagicProjectile::BeginPlay()
 	UGameplayStatics::SpawnEmitterAttached(CastMagicProjectile_VFX, SphereComp, "Muzzle_01");
 }
 
-// Called every frame
-void AVSMagicProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AVSMagicProjectile::Explode_Implementation()
 {
 	Super::Explode_Implementation();
@@ -40,10 +33,11 @@ void AVSMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		USVAttributeComponent* AttributeComp = Cast<USVAttributeComponent>(OtherActor->GetComponentByClass(USVAttributeComponent::StaticClass()));
+		USVAttributeComponent* AttributeComp = USVAttributeComponent::GetAttributes(OtherActor);
 		if (AttributeComp)
 		{
-			AttributeComp->ApplyHealthChange(BaseDamage);
+			AttributeComp->ApplyHealthChange(GetInstigator(), BaseDamage);
+			UE_LOG(LogTemp, Display, TEXT("%s hit ! Damage inflicted : %f"), *GetNameSafe(OtherActor), BaseDamage)
 			Explode_Implementation();
 		}
 	}

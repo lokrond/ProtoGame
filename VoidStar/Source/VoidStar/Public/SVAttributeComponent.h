@@ -17,6 +17,9 @@ public:
 	// Sets default values for this component's properties
 	USVAttributeComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static USVAttributeComponent* GetAttributes(AActor* FromActor);
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
@@ -28,11 +31,11 @@ public:
 	float MaxHealth = 100.f;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-	bool ApplyHealthChange(float Delta);
+	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
 	float GetHealth() { return Health; }
-
 	float AddToHealth(float NewHealth) { return Health += NewHealth; }
+	bool IsFullHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const;

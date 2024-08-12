@@ -21,7 +21,7 @@ public:
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float BaseDamage;
+	float BaseDamage = -25.f;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TObjectPtr<UParticleSystem> CastMagicProjectile_VFX;
@@ -32,9 +32,6 @@ protected:
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void Explode_Implementation() override;
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Explode_Implementation() override;
 
 };

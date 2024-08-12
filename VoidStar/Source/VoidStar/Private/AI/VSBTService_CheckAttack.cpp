@@ -25,14 +25,13 @@ void UVSBTService_CheckAttack::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 				if (ensure(AIPawn))
 				{
 					float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
-					bool bWithinRange = DistanceTo < 1000.f;
+					bool bWithinRange = DistanceTo < 2000.f;
 
 					bool bHasLOS = false;
 					if (bWithinRange)
 					{
 						bHasLOS = MyController->LineOfSightTo(TargetActor);
 					}
-
 
 					BlackboardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bWithinRange && bHasLOS));
 				}

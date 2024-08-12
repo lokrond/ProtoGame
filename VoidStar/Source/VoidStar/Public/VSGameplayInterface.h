@@ -24,5 +24,5 @@ class VOIDSTAR_API IVSGameplayInterface
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Interact(APawn* InstigatorPawn, UActorComponent* OwnerAttribute);
+	void Interact(APawn* InstigatorPawn);
 };

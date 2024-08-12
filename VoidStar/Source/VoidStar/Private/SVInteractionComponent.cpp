@@ -49,9 +49,6 @@ void USVInteractionComponent::PrimaryInteract()
 
 	FVector End = EyeLocation + (EyeRotation.Vector() * 200);
 
-	//FHitResult Hit;
-	//bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);
-
 	TArray<FHitResult>  Hits;
 	FCollisionShape Shape;
 	float Radius = 30.f;
@@ -69,8 +66,7 @@ void USVInteractionComponent::PrimaryInteract()
 			if (HitActor->Implements<UVSGameplayInterface>())
 			{
 				APawn* MyPawn = Cast<APawn>(MyOwner);
-				UActorComponent* OwnerAttribute = MyOwner->GetComponentByClass(AttributeCompClass);
-				IVSGameplayInterface::Execute_Interact(HitActor, MyPawn, OwnerAttribute);
+				IVSGameplayInterface::Execute_Interact(HitActor, MyPawn);
 				DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 16, LineColor, false, 2.f);
 				break;
 			}

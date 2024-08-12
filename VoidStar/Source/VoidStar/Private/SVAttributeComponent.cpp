@@ -12,17 +12,36 @@ USVAttributeComponent::USVAttributeComponent()
 
 }
 
-
 bool USVAttributeComponent::IsAlive() const
 {
 	return Health > 0.0f;
 }
 
-
-bool USVAttributeComponent::ApplyHealthChange(float Delta /*AActor* &InstigatorActor*/)
+bool USVAttributeComponent::IsFullHealth() const
 {
-	Health += Delta;
-	Health = FMath::Clamp(Health, 0.f, 100.f);
-	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
-	return true;
+	return Health == MaxHealth;
+}
+
+bool USVAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
+{
+	float OldHealth = Health;
+
+	Health = FMath::Clamp(Health + Delta, 0.f, MaxHealth);
+	UE_LOG(LogTemp, Warning, TEXT("Health changed to this value : %f"), Health)
+
+	float ActualDelta = Health - OldHealth;
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	UE_LOG(LogTemp, Warning, TEXT("ActualDelta is : %f"), ActualDelta)
+
+	// ActualDelta is 0 if player has no remaining health point
+	return ActualDelta != 0;
+}
+
+USVAttributeComponent* USVAttributeComponent::GetAttributes(AActor* FromActor)
+{
+	if (FromActor)
+	{
+		return Cast<USVAttributeComponent>(FromActor->GetComponentByClass(StaticClass()));
+	}
+	return nullptr;
 }
