@@ -11,6 +11,13 @@ AVSBlackholeProjectile::AVSBlackholeProjectile()
 	RadialForceComp->SetupAttachment(RootComponent);
 }
 
+void AVSBlackholeProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AVSBlackholeProjectile::DestroyOnOverlap);
+}
+
 void AVSBlackholeProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -24,11 +31,6 @@ void AVSBlackholeProjectile::BeginPlay()
 	GetWorldTimerManager().SetTimer(TimerHandle_Blackhole, this, &AVSBlackholeProjectile::HandleDestruction, LifeTime);
 }
 
-void AVSBlackholeProjectile::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AVSBlackholeProjectile::DestroyOnOverlap);
-}
 
 void AVSBlackholeProjectile::HandleDestruction()
 {
@@ -43,6 +45,10 @@ void AVSBlackholeProjectile::HandleDestruction()
 
 void AVSBlackholeProjectile::DestroyOnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s, has been destroyed"), *GetNameSafe(OtherActor));
-	OtherActor->Destroy();
+	if (OtherActor != GetInstigator())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s, has been destroyed"), *GetNameSafe(OtherActor));
+
+		OtherActor->Destroy();
+	}
 }

@@ -4,13 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "PhysicsEngine/RadialForceComponent.h"
 #include "SVAICharacter.generated.h"
 
 class USVAttributeComponent;
 class UPawnSensingComponent;
 class URadialForceComponent;
 class UParticleSystemComponent;
+class UUserWidget;
+class USVWorldUserWidget;
+class USVActionComponent;
 
 UCLASS()
 class VOIDSTAR_API AAICharacter : public ACharacter
@@ -28,6 +30,15 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName HitFlashParamName;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	TObjectPtr<USVWorldUserWidget> ActiveHealthBar;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HealthBarWidgetClass;
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UPawnSensingComponent> PawnSensingComp;
 
@@ -37,8 +48,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USVAttributeComponent> AttributeComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UParticleSystemComponent> ParticleEffectComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<USVActionComponent> ActionComp;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TObjectPtr<UParticleSystem> Explosion_VFX;

@@ -18,8 +18,15 @@ AVSBaseBuffs::AVSBaseBuffs()
 
 void AVSBaseBuffs::OnBuffInteraction()
 {
-		SetBuffState(false);
-		GetWorldTimerManager().SetTimer(InactiveBuffDelay_Handle, this, &AVSBaseBuffs::ReactiveBuff, InactiveDelay);
+	// Allow buffs to have a unique use when delay set to -1.
+	if (InactiveDelay == -1)
+	{
+		Destroy();
+		return;
+	}
+
+	SetBuffState(false);
+	GetWorldTimerManager().SetTimer(InactiveBuffDelay_Handle, this, &AVSBaseBuffs::ReactiveBuff, InactiveDelay);
 }
 
 void AVSBaseBuffs::ReactiveBuff()

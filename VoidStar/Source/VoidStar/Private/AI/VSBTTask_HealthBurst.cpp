@@ -19,7 +19,7 @@ EBTNodeResult::Type UVSBTTask_HealthBurst::ExecuteTask(UBehaviorTreeComponent& O
 				if (USVAttributeComponent* AIAttribute = USVAttributeComponent::GetAttributes(AICharacter))
 				{
 					UE_LOG(LogTemp, Warning, TEXT("AIAttribute Cast Succeed"))
-					AIAttribute->ApplyHealthChange(AIPawn->GetInstigator(), AIAttribute->MaxHealth);
+					AIAttribute->ApplyHealthChange(AIPawn->GetInstigator(), AIAttribute->GetMaxHealth());
 					return EBTNodeResult::Succeeded;
 				}
 			}

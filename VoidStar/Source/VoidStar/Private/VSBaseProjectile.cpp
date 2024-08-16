@@ -39,9 +39,15 @@ void AVSBaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 
 void AVSBaseProjectile::Explode_Implementation()
 {
+	APawn* ProjectileInstigator = GetInstigator();
+
 	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 	UGameplayStatics::PlaySoundAtLocation(this, Impact_Audio, GetActorLocation(), GetActorRotation());
-	UGameplayStatics::PlayWorldCameraShake(this, HitCameraShake, GetActorLocation(), 30.f, 1500.f, 1, true);
+
+	if (ProjectileInstigator)
+	{
+		UGameplayStatics::PlayWorldCameraShake(this, HitCameraShake, ProjectileInstigator->GetActorLocation(), 30.f, 1500.f, 1, true);
+	}
 
 	Destroy();
 }

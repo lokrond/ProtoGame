@@ -3,9 +3,17 @@
 
 #include "AI/VSBTTask_RangeAttack.h"
 #include "AIController.h"
+#include "SVAttributeComponent.h"
 #include "GameFramework/Character.h"
 #include "Math/UnrealMathUtility.h"
 #include "BehaviorTree/BlackboardComponent.h"
+
+
+UVSBTTask_RangeAttack::UVSBTTask_RangeAttack()
+{
+	ProjectileSpread = 2.5f;
+	ProjectileRecoil = 5.f;
+}
 
 EBTNodeResult::Type UVSBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -21,18 +29,18 @@ EBTNodeResult::Type UVSBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& O
 
 		AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 
-		if (TargetActor == nullptr)
+		if (TargetActor == nullptr && !USVAttributeComponent::IsActorAlive(TargetActor))
 		{
 			return EBTNodeResult::Failed;
 		}
 
 		FVector Direction = TargetActor->GetActorLocation() - MuzzleLocation;
 		FRotator MuzzleRotation = Direction.Rotation();
-		MuzzleRotation.Yaw += FMath::FRandRange(-3.f, 3.f);
-		MuzzleRotation.Pitch += FMath::FRandRange(-3.f, 3.f);
+		MuzzleRotation.Yaw += FMath::FRandRange(-ProjectileSpread, ProjectileSpread);
+		MuzzleRotation.Pitch += FMath::FRandRange(0, ProjectileRecoil);
 		FActorSpawnParameters Params;
 		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		Params.Instigator = RangeAIPawn->GetInstigator();
+		Params.Instigator = RangeAIPawn;
 
 		AActor* NewProj = GetWorld()->SpawnActor<AActor>(RangeProjectileClass, MuzzleLocation, MuzzleRotation, Params);
 

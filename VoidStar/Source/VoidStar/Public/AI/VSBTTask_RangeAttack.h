@@ -20,5 +20,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<AActor> RangeProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float ProjectileSpread;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float ProjectileRecoil;
+
+public:
+
+	UVSBTTask_RangeAttack();
 	
 };

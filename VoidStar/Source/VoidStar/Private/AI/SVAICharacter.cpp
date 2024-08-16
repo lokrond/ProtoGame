@@ -5,11 +5,17 @@
 
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "SVActionComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "SVAttributeComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Perception/PawnSensingComponent.h"
+#include "SVWorldUserWidget.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -27,7 +33,14 @@ AAICharacter::AAICharacter()
 	RadialForceComp->Radius = ExplosionRadius;
 	RadialForceComp->bImpulseVelChange = true;
 
+	ActionComp = CreateDefaultSubobject<USVActionComponent>("ActionComp");
+
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
+
+	HitFlashParamName = "HitFlashTime";
 }
 
 void AAICharacter::PostInitializeComponents()
@@ -50,9 +63,23 @@ void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponen
 
 	if (Delta < 0.f)
 	{
+		GetMesh()->SetScalarParameterValueOnMaterials(HitFlashParamName, GetWorld()->TimeSeconds);
+
 		if (InstigatorActor != this)
 		{
 			SetTargetActor(InstigatorActor);
+		}
+
+		float ActorMaxHealth = AttributeComp->GetMaxHealth();
+		if(ActiveHealthBar == nullptr && !(Delta == -ActorMaxHealth))
+		{
+			ActiveHealthBar = CreateWidget<USVWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
+
+			if (ActiveHealthBar)
+			{
+				ActiveHealthBar->AttachedActor = this;
+				ActiveHealthBar->AddToViewport();
+			}
 		}
 
 		if (NewHealth <= 0.f)
@@ -65,6 +92,9 @@ void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponen
 
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName("Ragdoll");
+
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->DisableMovement();
 			SetLifeSpan(10.f);
 		}
 	}

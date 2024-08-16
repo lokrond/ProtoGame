@@ -7,7 +7,9 @@
 #include "GameFramework/Character.h"
 #include "VSCharacter.generated.h"
 
+class USVActionComponent;
 class USVAttributeComponent;
+class UParticleSystemComponent;
 class AVSTeleportProjectile;
 class AVSBlackholeProjectile;
 class AVSMagicProjectile;
@@ -23,13 +25,15 @@ class VOIDSTAR_API AVSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this character's properties
-	AVSCharacter();
+
 
 protected:
 
-	FTimerHandle TimerHandle_AttackAnim;
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName EffectOnHitParamName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName EffectOnParryParamName;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USVInteractionComponent> InteractionComp;
@@ -41,7 +45,10 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USVAttributeComponent* AttributeComp;
+	TObjectPtr<USVAttributeComponent> AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USVActionComponent> ActionComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> PlayerMappingContext;
@@ -67,34 +74,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* InteractAction;
 
-	UPROPERTY(EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimMontage> AttackAnim;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* SprintAction;
 
-	UPROPERTY(EditAnywhere, Category = "Class")
-	TSubclassOf<AVSMagicProjectile> MagicProjectileClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* ParryAction;
 
-	UPROPERTY(EditAnywhere, Category = "Class")
-	TSubclassOf<AVSTeleportProjectile> TeleportProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Class")
-	TSubclassOf<AVSBlackholeProjectile> BlackholeProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DelayTimer;
-
-	void Move(const FInputActionInstance& Instance);
-
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 	void ShootPrimaryAttack(const FInputActionInstance& Instance);
-	void PrimaryAttack_TimeElapsed();
-
 	void ShootUltimateAttack(const FInputActionInstance& Instance);
-	void UltimateAttack_TimeElapsed();
-
 	void ShootTeleportProjectile(const FInputActionInstance& Instance);
-	void TeleportProjectile_TimeElapsed();
+
+	void Parry(const FInputActionInstance& Instance);;
 
 	void LookMouse(const FInputActionValue& InputValue);
+	void Move(const FInputActionInstance& Instance);
+
+	void SprintStart();
+	void SprintStop();
+
 	void FaceOnAction();
 
 	void PrimaryInteract();
@@ -104,14 +101,16 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual FVector GetPawnViewLocation() const override;
 
-	// Called to bind functionality to input
+public:
+
+	AVSCharacter();
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Exec)
+	void HealSelf(float Amount = 100);
 };

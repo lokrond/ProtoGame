@@ -16,24 +16,31 @@ class VOIDSTAR_API USVAttributeComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	USVAttributeComponent();
-
+	// Could use (meta = "") specifier for more properties editor related
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static USVAttributeComponent* GetAttributes(AActor* FromActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static bool IsActorAlive(AActor* Actor);
 
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float Health;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	float MaxHealth = 100.f;
+
 public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
-	float MaxHealth = 100.f;
+	UFUNCTION(BlueprintCallable)
+	bool Kill(AActor* InstigatorActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
 	float GetHealth() { return Health; }
+	float GetMaxHealth() { return MaxHealth; }
 	float AddToHealth(float NewHealth) { return Health += NewHealth; }
 	bool IsFullHealth() const;
 

@@ -6,12 +6,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "SVActionComponent.h"
 #include "SVAttributeComponent.h"
 #include "SVInteractionComponent.h"
-#include "VSBlackholeProjectile.h"
-#include "VSMagicProjectile.h"
-#include "VSTeleportProjectile.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 // Sets default values
@@ -31,8 +30,13 @@ AVSCharacter::AVSCharacter()
 
 	AttributeComp = CreateDefaultSubobject<USVAttributeComponent>("AttributeComp");
 
+	ActionComp = CreateDefaultSubobject<USVActionComponent>("ActionComp");
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	EffectOnHitParamName = "HitFlashTime";
+	EffectOnParryParamName = "ParryFlashTime";
 }
 
 void AVSCharacter::PostInitializeComponents()
@@ -56,12 +60,11 @@ void AVSCharacter::BeginPlay()
 	}
 }
 
-// Called every frame
-void AVSCharacter::Tick(float DeltaTime)
+FVector AVSCharacter::GetPawnViewLocation() const
 {
-	Super::Tick(DeltaTime);
-
+	return CameraComp->GetComponentLocation();
 }
+
 
 // Called to bind functionality to input
 void AVSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -72,60 +75,26 @@ void AVSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVSCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVSCharacter::LookMouse);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AVSCharacter::SprintStart);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AVSCharacter::SprintStop);
+
 		EnhancedInputComponent->BindAction(PrimaryAttack, ETriggerEvent::Triggered, this, &AVSCharacter::ShootPrimaryAttack);
 		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &AVSCharacter::ShootTeleportProjectile);
 		EnhancedInputComponent->BindAction(UltimateAttack, ETriggerEvent::Triggered, this, &AVSCharacter::ShootUltimateAttack);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+
+		EnhancedInputComponent->BindAction(ParryAction, ETriggerEvent::Triggered, this, &AVSCharacter::Parry);
+
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AVSCharacter::PrimaryInteract);
+
 	}
 }
 
-
-
-void AVSCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
+void AVSCharacter::HealSelf(float Amount)
 {
-	if (ensureAlways(ClassToSpawn))
-	{
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this);
-
-		FCollisionObjectQueryParams ObjParams;
-		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.f);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-		FHitResult Hit;
-
-		FRotator CameraRotation = CameraComp->GetComponentRotation();
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-		FVector StartSweep = CameraComp->GetComponentLocation();
-		FVector EndSweep = CameraComp->GetComponentLocation() + CameraRotation.Vector() * 5000;
-
-		if (GetWorld()->SweepSingleByObjectType(Hit, StartSweep, EndSweep, FQuat::Identity, ObjParams, Shape, QueryParams))
-		{
-			//Overwrite EndSweep in case the Sweep detect an object to calculate the optimal rotation based on this updated EndSweep
-			EndSweep - Hit.ImpactPoint;
-		}
-
-		FRotator OptimalRotation = FRotationMatrix::MakeFromX(EndSweep - HandLocation).Rotator();
-		FTransform SpawnTransform = FTransform(OptimalRotation, HandLocation);
-
-		if (ClassToSpawn == BlackholeProjectileClass)
-		{
-			SpawnTransform = FTransform(CameraRotation, HandLocation);
-		}
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTransform, SpawnParams);
-	}
+	AttributeComp->ApplyHealthChange(this, Amount);
 }
-
-
 
 void AVSCharacter::Move(const FInputActionInstance& Instance)
 {
@@ -167,6 +136,15 @@ void AVSCharacter::LookMouse(const FInputActionValue& InputValue)
 	}
 }
 
+void AVSCharacter::SprintStart()
+{
+	ActionComp->StartActionByName(this, "SprintAction");
+}
+
+void AVSCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this, "SprintAction");
+}
 
 void AVSCharacter::PrimaryInteract()
 {
@@ -181,59 +159,36 @@ void AVSCharacter::PrimaryInteract()
 void AVSCharacter::ShootPrimaryAttack(const FInputActionInstance& Instance)
 {
 	FaceOnAction();
-	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_AttackAnim, this, &AVSCharacter::PrimaryAttack_TimeElapsed, DelayTimer);
-
+	ActionComp->StartActionByName(this, "PrimaryAttackAction");
 }
-
-void AVSCharacter::PrimaryAttack_TimeElapsed()
-{
-	UE_LOG(LogTemp, Display, TEXT("PrimaryAttack called"))
-	SpawnProjectile(MagicProjectileClass);
-}
-
 
 void AVSCharacter::ShootUltimateAttack(const FInputActionInstance& Instance)
 {
 	FaceOnAction();
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_AttackAnim, this, &AVSCharacter::UltimateAttack_TimeElapsed, DelayTimer);
+	ActionComp->StartActionByName(this, "UltimateAttackAction");
 }
-
-void AVSCharacter::UltimateAttack_TimeElapsed()
-{
-	SpawnProjectile(BlackholeProjectileClass);
-}
-
 
 void AVSCharacter::ShootTeleportProjectile(const FInputActionInstance& Instance)
 {
 	FaceOnAction();
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_AttackAnim, this, &AVSCharacter::TeleportProjectile_TimeElapsed, DelayTimer);
+	ActionComp->StartActionByName(this, "TeleportAction");
 }
 
-void AVSCharacter::TeleportProjectile_TimeElapsed()
+void AVSCharacter::Parry(const FInputActionInstance& Instance)
 {
-	SpawnProjectile(TeleportProjectileClass);
+	ActionComp->StartActionByName(this, "ParryAction");
+	GetMesh()->SetScalarParameterValueOnMaterials(EffectOnParryParamName, GetWorld()->TimeSeconds);
 }
-
 
 void AVSCharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	if (Delta < 0.f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials("HitFlashTime", GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials(EffectOnHitParamName, GetWorld()->TimeSeconds);
 	}
 	if (NewHealth <= 0.f && Delta < 0.f)
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
-	}
-	if (NewHealth == 0)
-	{
-		GetWorldTimerManager().ClearTimer(TimerHandle_AttackAnim);
 	}
 }

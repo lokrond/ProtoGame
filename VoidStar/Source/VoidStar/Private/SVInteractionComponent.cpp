@@ -5,8 +5,8 @@
 
 #include "VSGameplayInterface.h"
 #include "DrawDebugHelpers.h"
-#include "SVAttributeComponent.h"
 
+static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("sv.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
 
 // Sets default values for this component's properties
 USVInteractionComponent::USVInteractionComponent()
@@ -39,6 +39,8 @@ void USVInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 void USVInteractionComponent::PrimaryInteract()
 {
+	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
+
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
@@ -47,7 +49,7 @@ void USVInteractionComponent::PrimaryInteract()
 	FRotator EyeRotation;
 	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	FVector End = EyeLocation + (EyeRotation.Vector() * 200);
+	FVector End = EyeLocation + (EyeRotation.Vector() * 380);
 
 	TArray<FHitResult>  Hits;
 	FCollisionShape Shape;
@@ -67,11 +69,19 @@ void USVInteractionComponent::PrimaryInteract()
 			{
 				APawn* MyPawn = Cast<APawn>(MyOwner);
 				IVSGameplayInterface::Execute_Interact(HitActor, MyPawn);
-				DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 16, LineColor, false, 2.f);
+
+				if (bDebugDraw)
+				{
+					DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 16, LineColor, false, 2.f);
+				}
+
 				break;
 			}
 		}
-
+	
 	}
-	DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.f, 0, 2.f);
+	if (bDebugDraw)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.f, 0, 2.f);
+	}
 }

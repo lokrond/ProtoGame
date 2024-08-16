@@ -3,9 +3,6 @@
 
 #include "AI/SVAIController.h"
 
-#include "AI/VSBTService_CheckAttack.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 void ASVAIController::BeginPlay()
 {

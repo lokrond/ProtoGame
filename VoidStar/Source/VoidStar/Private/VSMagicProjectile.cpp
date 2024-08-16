@@ -2,30 +2,18 @@
 
 
 #include "VSMagicProjectile.h"
+
+#include "SVActionComponent.h"
 #include "Components/SphereComponent.h"
-#include "SVAttributeComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "SVGameplayFunctionLibrary.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
 
 // Sets default values
 AVSMagicProjectile::AVSMagicProjectile()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AVSMagicProjectile::OnActorOverlap);
 
-}
-
-// Called when the game starts or when spawned
-void AVSMagicProjectile::BeginPlay()
-{
-	Super::BeginPlay();
-
-	UGameplayStatics::SpawnEmitterAttached(CastMagicProjectile_VFX, SphereComp, "Muzzle_01");
-}
-
-void AVSMagicProjectile::Explode_Implementation()
-{
-	Super::Explode_Implementation();
 }
 
 
@@ -33,12 +21,21 @@ void AVSMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		USVAttributeComponent* AttributeComp = USVAttributeComponent::GetAttributes(OtherActor);
-		if (AttributeComp)
+
+		USVActionComponent* ActionComp = Cast<USVActionComponent>(OtherActor->GetComponentByClass(USVActionComponent::StaticClass()));
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
 		{
-			AttributeComp->ApplyHealthChange(GetInstigator(), BaseDamage);
-			UE_LOG(LogTemp, Display, TEXT("%s hit ! Damage inflicted : %f"), *GetNameSafe(OtherActor), BaseDamage)
-			Explode_Implementation();
+			MovementComp->Velocity = -MovementComp->Velocity;
+
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
 		}
+
+		if (USVGameplayFunctionLibrary::ApplyDirectionnalDamage(GetInstigator(), OtherActor, BaseDamage, SweepResult))
+		{
+			UE_LOG(LogTemp, Display, TEXT("%s hit ! Damage inflicted : %f"), *GetNameSafe(OtherActor), BaseDamage)
+			Explode();
+		}
+
 	}
 }
