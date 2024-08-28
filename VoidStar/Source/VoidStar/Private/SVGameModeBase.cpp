@@ -54,11 +54,17 @@ void ASVGameModeBase::KillAll()
 
 		if (AttributeComp && AttributeComp->IsAlive())
 		{
-			AttributeComp->Kill(this); //@A FAIRE Pass in with credit score
+
+			AttributeComp->Kill(this);
+
+			for (TActorIterator<AVSCharacter> PlayerIt(GetWorld()); PlayerIt; ++PlayerIt)
+			{
+				AVSCharacter* Player = *PlayerIt;
+				Player->GetPlayerState<ASVPlayerState>()->AddCreditScore(10);
+			}
 		}
 	}
 }
-
 
 void ASVGameModeBase::SpawnBotTimerElapsed()
 {

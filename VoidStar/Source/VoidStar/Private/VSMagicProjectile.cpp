@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "SVGameplayFunctionLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "SVActionEffect.h"
 
 
 // Sets default values
@@ -33,8 +34,12 @@ void AVSMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 
 		if (USVGameplayFunctionLibrary::ApplyDirectionnalDamage(GetInstigator(), OtherActor, BaseDamage, SweepResult))
 		{
-			UE_LOG(LogTemp, Display, TEXT("%s hit ! Damage inflicted : %f"), *GetNameSafe(OtherActor), BaseDamage)
 			Explode();
+
+			if (ActionComp)
+			{
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+			}
 		}
 
 	}

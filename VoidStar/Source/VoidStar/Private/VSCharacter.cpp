@@ -180,13 +180,16 @@ void AVSCharacter::Parry(const FInputActionInstance& Instance)
 	GetMesh()->SetScalarParameterValueOnMaterials(EffectOnParryParamName, GetWorld()->TimeSeconds);
 }
 
-void AVSCharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta)
+void AVSCharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewValue, float Delta)
 {
 	if (Delta < 0.f)
 	{
 		GetMesh()->SetScalarParameterValueOnMaterials(EffectOnHitParamName, GetWorld()->TimeSeconds);
+
+		const float EnergyDelta = FMath::Abs(Delta);
+		AttributeComp->ApplyEnergyChanged(InstigatorActor, EnergyDelta);
 	}
-	if (NewHealth <= 0.f && Delta < 0.f)
+	if (NewValue <= 0.f && Delta < 0.f)
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);

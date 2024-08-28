@@ -7,6 +7,8 @@
 #include "VSBaseProjectile.h"
 #include "VSMagicProjectile.generated.h"
 
+class USVActionEffect;
+
 /**
  * 
  */
@@ -24,6 +26,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	FGameplayTag ParryTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<USVActionEffect> BurningActionClass;
+
 
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

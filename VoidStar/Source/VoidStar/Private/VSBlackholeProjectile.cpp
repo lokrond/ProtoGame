@@ -2,6 +2,7 @@
 
 
 #include "VSBlackholeProjectile.h"
+
 #include "Components/SphereComponent.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 

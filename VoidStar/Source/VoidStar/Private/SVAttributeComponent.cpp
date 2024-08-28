@@ -15,7 +15,29 @@ USVAttributeComponent::USVAttributeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Health = MaxHealth;
+	Energy = 0.f;
+	EnergyGeneratePercentile = 50.f;
 
+}
+
+bool USVAttributeComponent::ApplyEnergyChanged(AActor* InstigatorActor, float Delta)
+{
+
+	float OldEnergy = Energy;
+
+	Energy = FMath::Clamp(Energy + Delta, 0.f, MaxEnergy);
+
+
+	float ActualDelta = Energy - OldEnergy;
+
+	if (!FMath::IsNearlyZero(ActualDelta))
+	{
+		OnEnergyChanged.Broadcast(InstigatorActor, this, Energy, ActualDelta);
+
+		return true;
+	}
+	
+	return false;
 }
 
 bool USVAttributeComponent::IsAlive() const
@@ -43,14 +65,17 @@ bool USVAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 		Delta *= DamageMultiplier;
 	}
 
+
 	float OldHealth = Health;
 
 	Health = FMath::Clamp(Health + Delta, 0.f, MaxHealth);
-	UE_LOG(LogTemp, Warning, TEXT("Health changed to this value : %f"), Health)
 
 	float ActualDelta = Health - OldHealth;
+
 	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
-	UE_LOG(LogTemp, Warning, TEXT("ActualDelta is : %f"), ActualDelta)
+
+
+
 
 	//Died implementation
 	if (ActualDelta < 0.f && Health == 0.f)
@@ -65,6 +90,8 @@ bool USVAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 	// ActualDelta is 0 if player has no remaining health point
 	return ActualDelta != 0;
 }
+
+
 
 USVAttributeComponent* USVAttributeComponent::GetAttributes(AActor* FromActor)
 {

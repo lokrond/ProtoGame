@@ -33,6 +33,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName HitFlashParamName;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	FName TargetActorKey;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<USVWorldUserWidget> SpottedWidgetClass;
+
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	TObjectPtr<USVWorldUserWidget> ActiveHealthBar;
 
@@ -61,9 +67,12 @@ protected:
 	void OnPawnSeen(APawn* Pawn);
 
 	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewValue, float Delta);
+
 
 	void SetTargetActor(AActor* NewTarget);
+
+	AActor* GetTargetActor() const;
 
 	bool bIsLowLife = false;
 

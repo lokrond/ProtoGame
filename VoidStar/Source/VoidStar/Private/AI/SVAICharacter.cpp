@@ -41,6 +41,7 @@ AAICharacter::AAICharacter()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	HitFlashParamName = "HitFlashTime";
+	TargetActorKey = "TargetActor";
 }
 
 void AAICharacter::PostInitializeComponents()
@@ -51,10 +52,10 @@ void AAICharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &AAICharacter::OnHealthChanged);
 }
 
-void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewHealth, float Delta)
+void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponent* OwningComp, float NewValue, float Delta)
 {
 	
-	if (NewHealth <= 25.f)
+	if (NewValue <= 25.f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Particle effect activate"))
 		ParticleEffectComp->Activate();
@@ -82,7 +83,7 @@ void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponen
 			}
 		}
 
-		if (NewHealth <= 0.f)
+		if (NewValue <= 0.f)
 		{
 			AAIController* AIC = Cast<AAIController>(GetController());
 			if (AIC)
@@ -99,7 +100,7 @@ void AAICharacter::OnHealthChanged(AActor* InstigatorActor, USVAttributeComponen
 		}
 	}
 
-	if (NewHealth > 25.f && ParticleEffectComp->IsActive())
+	if (NewValue > 25.f && ParticleEffectComp->IsActive())
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion_VFX, GetActorLocation(), GetActorRotation());
 		RadialForceComp->FireImpulse();
@@ -113,12 +114,40 @@ void AAICharacter::SetTargetActor(AActor* NewTarget)
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if (AIC)
 	{
-		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+		AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
 	}
 }
+
+
+AActor* AAICharacter::GetTargetActor() const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
+	}
+
+	return nullptr;
+}
+
 void AAICharacter::OnPawnSeen(APawn* Pawn)
 {
+
+	if (GetTargetActor() != Pawn)
+	{
+		
+	}
 	SetTargetActor(Pawn);
 
-	DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.f, true);
+	USVWorldUserWidget* NewWidget = CreateWidget<USVWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+	if (NewWidget)
+	{
+		NewWidget->AttachedActor = this;
+
+		NewWidget->AddToViewport(10);
+
+	}
+
+	//DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.f, true);
+
 }

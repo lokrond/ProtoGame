@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "SVInteractionComponent.generated.h"
 
-class USVAttributeComponent;
+class USVWorldUserWidget;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class VOIDSTAR_API USVInteractionComponent : public UActorComponent
@@ -22,8 +22,26 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Class")
-	TSubclassOf<USVAttributeComponent> AttributeCompClass;
+	void FindBestInteractable();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<USVWorldUserWidget> DefaultWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<USVWorldUserWidget> DefaultWidgetInstance;
+
+	UPROPERTY()
+	TObjectPtr<AActor> FocusedActor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	float TraceDistance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	float TraceRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	TEnumAsByte<ECollisionChannel> CollisionChannel;
+
 
 	// Called when the game starts
 	virtual void BeginPlay() override;

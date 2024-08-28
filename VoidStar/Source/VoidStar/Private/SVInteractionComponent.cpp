@@ -5,60 +5,64 @@
 
 #include "VSGameplayInterface.h"
 #include "DrawDebugHelpers.h"
+#include "Blueprint/UserWidget.h"
+#include "SVWorldUserWidget.h"
 
 static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("sv.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
 
-// Sets default values for this component's properties
+
 USVInteractionComponent::USVInteractionComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	TraceDistance = 380.f;
+	TraceRadius = 32.f;
+	CollisionChannel = ECC_WorldDynamic;
 }
 
 
-// Called when the game starts
+
+
 void USVInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 
 }
 
 
-// Called every frame
 void USVInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	FindBestInteractable();
+
 }
 
-void USVInteractionComponent::PrimaryInteract()
+void USVInteractionComponent::FindBestInteractable()
 {
 	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
 
 	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(CollisionChannel);
 
 	AActor* MyOwner = GetOwner();
 	FVector EyeLocation;
 	FRotator EyeRotation;
 	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	FVector End = EyeLocation + (EyeRotation.Vector() * 380);
+	FVector End = EyeLocation + (EyeRotation.Vector() * TraceDistance);
 
 	TArray<FHitResult>  Hits;
 	FCollisionShape Shape;
-	float Radius = 30.f;
-	Shape.SetSphere(Radius);
+	Shape.SetSphere(TraceRadius);
 
 	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, End, FQuat::Identity, ObjectQueryParams, Shape);
 
 	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+
+	FocusedActor = nullptr;
 
 	for (FHitResult Hit : Hits)
 	{
@@ -67,21 +71,61 @@ void USVInteractionComponent::PrimaryInteract()
 		{
 			if (HitActor->Implements<UVSGameplayInterface>())
 			{
-				APawn* MyPawn = Cast<APawn>(MyOwner);
-				IVSGameplayInterface::Execute_Interact(HitActor, MyPawn);
-
 				if (bDebugDraw)
 				{
-					DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 16, LineColor, false, 2.f);
+					DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 16, LineColor, false, 2.f);
 				}
+				FocusedActor = HitActor;
 
 				break;
 			}
 		}
-	
 	}
+
+	if (FocusedActor)
+	{
+		if (DefaultWidgetInstance == nullptr && ensure(DefaultWidgetClass))
+		{
+			DefaultWidgetInstance = CreateWidget<USVWorldUserWidget>(GetWorld(), DefaultWidgetClass);
+
+		}
+
+		if (DefaultWidgetInstance)
+		{
+			DefaultWidgetInstance->AttachedActor = FocusedActor;
+
+			if (!DefaultWidgetInstance->IsInViewport())
+			{
+				DefaultWidgetInstance->AddToViewport();
+			}
+		}
+	}
+	else
+	{
+		if (DefaultWidgetInstance)
+		{
+			DefaultWidgetInstance->RemoveFromParent();
+
+		}
+
+	}
+
 	if (bDebugDraw)
 	{
 		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.f, 0, 2.f);
 	}
+}
+
+void USVInteractionComponent::PrimaryInteract()
+{
+	if (FocusedActor == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, "No Focus Actor to interact");
+		return;
+	}
+
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+
+	IVSGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
+
 }

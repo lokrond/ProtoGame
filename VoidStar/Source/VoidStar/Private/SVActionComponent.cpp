@@ -17,7 +17,7 @@ void USVActionComponent::BeginPlay()
 
 	for (TSubclassOf<USVAction> ActionClass : DefaultActions)
 	{
-		AddAction(ActionClass);
+		AddAction(GetOwner(),  ActionClass);
 	}
 }
 
@@ -29,7 +29,7 @@ void USVActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::White, DebugMsg);
 }
 
-void USVActionComponent::AddAction(TSubclassOf<USVAction> ActionClass)
+void USVActionComponent::AddAction(AActor* Instigator, TSubclassOf<USVAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -40,7 +40,38 @@ void USVActionComponent::AddAction(TSubclassOf<USVAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		Actions.Add(NewAction);
+
+		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
+		{
+			NewAction->StartAction(Instigator);
+		}
 	}
+}
+
+void USVActionComponent::RemoveAction(USVAction* ActionToRemove)
+{
+	if (!ensure(ActionToRemove && ActionToRemove->IsRunning()))
+	{
+		return;
+	}
+	if (Cast<USVAction>(ActionToRemove))
+	{
+		Actions.Remove(ActionToRemove);
+
+	}
+}
+
+USVAction* USVActionComponent::GetAction(TSubclassOf<USVAction> ActionClass) const
+{
+	for (USVAction* Action : Actions)
+	{
+		if (Action && Action->IsA(ActionClass))
+		{
+			return Action;
+		}
+	}
+
+	return nullptr;
 }
 
 bool USVActionComponent::StartActionByName(AActor* Instigator, FName ActionName)

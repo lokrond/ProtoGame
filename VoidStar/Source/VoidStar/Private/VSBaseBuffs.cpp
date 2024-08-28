@@ -24,7 +24,10 @@ void AVSBaseBuffs::OnBuffInteraction()
 		Destroy();
 		return;
 	}
-
+	if (InactiveDelay == -2)
+	{
+		return;
+	}
 	SetBuffState(false);
 	GetWorldTimerManager().SetTimer(InactiveBuffDelay_Handle, this, &AVSBaseBuffs::ReactiveBuff, InactiveDelay);
 }

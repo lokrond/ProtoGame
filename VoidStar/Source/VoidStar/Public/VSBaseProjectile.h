@@ -46,6 +46,7 @@ protected:
 	void Explode();
 
 	virtual void PostInitializeComponents() override;
+
 public:
 
 	AVSBaseProjectile();
